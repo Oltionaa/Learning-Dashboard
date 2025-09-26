@@ -1,117 +1,51 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
+import Header from "./components/Header.jsx";
+import SearchFilter from "./components/SearchFilter.jsx";
+import ResourceCard from "./components/ResourceCard.jsx";
+import resourcesData from "./data/resources";
 
 function App() {
-  const resources = [
-    {
-      title: "Web Security Basics",
-      description: "Learn the basics of web security.",
-      category: "Web Security",
-      link: "https://www.youtube.com/results?search_query=web+security+basics",
-    },
-    {
-      title: "Networking 101",
-      description: "Introduction to computer networks.",
-      category: "Networking",
-      link: "https://www.youtube.com/results?search_query=networking+basics",
-    },
-    {
-      title: "CTF Challenges",
-      description: "Practice Capture the Flag challenges.",
-      category: "CTFs",
-      link: "https://www.youtube.com/results?search_query=CTF+challenges",
-    },
-  ];
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const [searchText, setSearchText] = useState("");
 
   const categories = ["All", "Web Security", "Networking", "CTFs"];
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [darkMode, setDarkMode] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredResources = resources.filter((res) => {
-    const matchesCategory =
-      selectedCategory === "All" || res.category === selectedCategory;
+  const visibleResources = resourcesData.filter((item) => {
+    const categoryMatch =
+      activeCategory === "All" || item.category === activeCategory;
+    const searchMatch =
+      item.title.toLowerCase().includes(searchText.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchText.toLowerCase());
 
-    const matchesSearch =
-      res.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      res.description.toLowerCase().includes(searchQuery.toLowerCase());
-
-    return matchesCategory && matchesSearch;
+    return categoryMatch && searchMatch;
   });
 
   return (
-   <div
-  className={`min-vh-100 m-0 ${darkMode ? "bg-dark text-light" : "bg-light text-dark"}`}
->
+    <div className={`min-vh-100 m-0 ${isDarkTheme ? "bg-dark text-light" : "bg-light text-dark"}`}>
+      <div className="container py-4">
+        <Header isDarkTheme={isDarkTheme} toggleTheme={() => setIsDarkTheme(!isDarkTheme)} />
+        <SearchFilter
+          categories={categories}
+          searchText={searchText}
+          setSearchText={setSearchText}
+          activeCategory={activeCategory}
+          setActiveCategory={setActiveCategory}
+        />
 
-  <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
-    <h1 className="fw-bold mb-3 mb-md-0 text-center text-md-start">
-      Cybersecurity Dashboard
-    </h1>
-    <button
-      className={`btn ${darkMode ? "btn-light" : "btn-dark"}`}
-      onClick={() => setDarkMode(!darkMode)}
-    >
-      {darkMode ? "Light Mode" : "Dark Mode"}
-    </button>
-  </div>
-
-
-  <div className="d-flex flex-column flex-md-row gap-2 mb-4">
-    <input
-      type="text"
-      className="form-control"
-      placeholder="Search by title or description..."
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
-    />
-    <select
-      className="form-select"
-      value={selectedCategory}
-      onChange={(e) => setSelectedCategory(e.target.value)}
-    >
-      {categories.map((cat, idx) => (
-        <option key={idx} value={cat}>
-          {cat}
-        </option>
-      ))}
-    </select>
-  </div>
-
-
-  <div className="d-flex flex-wrap justify-content-center gap-3">
-    {filteredResources.length > 0 ? (
-      filteredResources.map((res, index) => (
-        <div
-          className={`card flex-fill ${darkMode ? "bg-secondary text-light" : "bg-light text-dark"}`}
-          style={{ minWidth: "250px", maxWidth: "300px" }}
-          key={index}
-        >
-          <div className="card-body d-flex flex-column justify-content-between">
-            <div>
-              <h5 className="card-title">{res.title}</h5>
-              <p className="card-text">{res.description}</p>
-              <p>
-                <strong>Category:</strong> {res.category}
-              </p>
-            </div>
-            <a
-              href={res.link}
-              className="btn btn-primary mt-2"
-              target="_blank"
-              rel="noreferrer"
-            >
-               Learn more
-            </a>
-          </div>
+        <div className="d-flex flex-wrap justify-content-center gap-3">
+          {visibleResources.length > 0 ? (
+            visibleResources.map((item, idx) => (
+              <ResourceCard key={idx} resource={item} isDarkTheme={isDarkTheme} />
+            ))
+          ) : (
+            <p className="text-center mt-4">No results found.</p>
+          )}
         </div>
-      ))
-    ) : (
-      <p className="text-center mt-4"> The result of this was not found.</p>
-    )}
-  </div>
-</div>
+      </div>
+    </div>
   );
 }
 
